@@ -1,0 +1,13 @@
+{
+  "name": "restful",
+  "version": "0.1.0",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-jslint": "~0.2.6",
+    "grunt-mocha": "~0.4.0",
+    "grunt-jsmin-sourcemap": "~1.7.0",
+    "grunt-mocha-cov": "0.0.7",
+    "grunt-mocha-phantomjs": "~0.2.8",
+    "grunt-contrib-watch": "~0.4.4"
+  }
+}

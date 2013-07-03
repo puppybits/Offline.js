@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title> Tests </title>
+        <link rel="stylesheet" href="../node_modules/grunt-mocha/node_modules/mocha/mocha.css" />
+    </head>
+    <body>
+        <div id="mocha"></div>
+        <script src="../node_modules/grunt-mocha/node_modules/mocha/mocha.js"></script>
+        <script src="../node_modules/chai/chai.js"></script>
+        <script>
+          mocha.ui('bdd'); 
+          mocha.reporter('html');
+          assert = chai.assert;
+          define = function(){
+            var name = arguments[0],
+            fnc = arguments[arguments.length-1];
+            window[name] = fnc();
+          }
+        </script>
+        <script src="../src/dispatch.js"></script>
+        <script src="test-offline.js"></script>
+        <script>
+          if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
+          else { mocha.run(); }
+        </script>
+    </body>
+</html>
