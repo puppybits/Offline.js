@@ -10,10 +10,13 @@
  * JSON - need to cache JSON, let expire and/or no use when stale
 */
 
-var config = {shouldAutoCache: true}
-
-var Offline = (function(shouldAutoCache){
-  var createThread = function(fnc, args, callback)
+var Offline = function(opts)
+{
+  var doc = opts.document || window.document,
+  shouldAutoCache = opts.shouldAutoCache || true,
+  rel = function(s){ return s.replace(/^.*\/\/[^\/]+/,'') },
+  
+  createThread = function(fnc, args, callback)
   {
     // TODO: add hook to stop processing when heavy load
     // TODO: fall back to main thread if workers not supported
@@ -66,13 +69,13 @@ var Offline = (function(shouldAutoCache){
         var reader = new FileReader ();
         reader.onload = function (e) {
           var imgDataUri = e.target.result;
-          localStorage.setItem(resource, imgDataUri)
+          localStorage.setItem(rel(resource), imgDataUri)
         };
         reader.readAsDataURL (blob);
         return;
       }
       
-      localStorage.setItem(resource, this.responseText)
+      localStorage.setItem(rel(resource), this.responseText)
     };
     
     xhr.send();
@@ -80,11 +83,14 @@ var Offline = (function(shouldAutoCache){
   
   scrapHTML = function(action)
   {
-    var resources = document.querySelectorAll('script, img, link');
-    for (var r in resource)
+    var resources = doc.querySelectorAll('script, img, link'),
+    element, r, isUsingCached;
+    for (r=0; r < resources.length; r++)
     {
-      var isUsingCached = r.getAttribute('data-original-src');
+      element = resources[r];
+      isUsingCached = element.getAttribute('data-original-src');
       if (isUsingCached) continue;
+      
       action(element);
     }
   },
@@ -101,7 +107,7 @@ var Offline = (function(shouldAutoCache){
     type = element.nodeName,
     prop = type !== 'IMG' ? 'innerHTML' : 'src',
     src = element.src || element.href,
-    result = localStorage.getItem( src );
+    result = localStorage.getItem( rel(src) );
     
     if (!result && src) 
     {
@@ -113,50 +119,50 @@ var Offline = (function(shouldAutoCache){
     {
       replaceElement(element, result, prop);
     }
-  }
-  
-  auto = function()
-  {
-    window.addEventListener('load', function()
-    {
-      if (navigator.onLine) 
-      {
-        scrapHTML(function(element)
-        {
-          schedule(load, element.src || element.href);
-        });
-      }
-      else
-      {
-        scrapHTML(function(element)
-        {
-          replaceResourcesInline( element );
-        });
-      }
-      
-      window.removeEventListener('load');
-    });
-  }
-  
-  auto();
+  };
+  // 
+  // auto = function()
+  // {
+  //   window.addEventListener('load', function()
+  //   {
+  //     if (navigator.onLine) 
+  //     {
+  //       scrapHTML(function(element)
+  //       {
+  //         schedule(load, element.src || element.href);
+  //       });
+  //     }
+  //     else
+  //     {
+  //       scrapHTML(function(element)
+  //       {
+  //         replaceResourcesInline( element );
+  //       });
+  //     }
+  //     
+  //     window.removeEventListener('load');
+  //   });
+  // };
+  // 
+  // auto();
   
   Object.freeze = Object.freeze || function(p){return p;};
   
-  return Object.freeze({
-    prime: scrapHTML,
+  return {
+    prime: function(){ scrapHTML(function(el){load(el.src || el.href)}) },
     activate: replaceResourcesInline,
-    cache: function(src){ this.schedule(this.load, src, null); }
-    wipe: function(src){ localstorage.setItem(src, null); }
-  });
+    cache: function(src){ this.schedule(this.load, src, null); },
+    wipe: function(src){ localstorage.setItem(rel(src), null); }
+  };
   
-}(config.shouldAutoCache))  
+}
 
-
-// Hacky inline testing
-
-var arr = [2,3,4], i = 1;
-Offline.prime(function(arr, i)
-{
-  console.log(arr[i]);
-}, [arr, i], function(e){console.log('finished')})
-
+// 
+// // Hacky inline testing
+// 
+// var arr = [2,3,4], i = 1;
+// Offline.prime(function(arr, i)
+// {
+//   console.log(arr[i]);
+// }, [arr, i], function(e){console.log('finished')})
+// 
