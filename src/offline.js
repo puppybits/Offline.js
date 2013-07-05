@@ -1,34 +1,30 @@
 /* 
-# Version 0
- * JS <script src="something.js">
- * CSS <link rel="stylesheet" type="text/css" href="mystyles.css"/>
- * HTML <link rel="import" href="template.html">
- * IMG <img src="something.png">
-# Version 0.5
- * background thread support
-# Version 1
- * JSON - need to cache JSON, let expire and/or no use when stale
+
 */
 
 var Offline = function(opts)
 {
   var doc = opts.document || window.document,
+  useThreads = (Blob && Worker && URL.createObjectURL && (opts.useThreads !== false)),
   shouldAutoCache = opts.shouldAutoCache || true,
   rel = function(s){ return s.replace(/^.*\/\/[^\/]+/,'') },
   
   createThread = function(fnc, args, callback)
   {
-    // TODO: add hook to stop processing when heavy load
-    // TODO: fall back to main thread if workers not supported
     var capturedArguments = args,
     synchronousAction = 'onmessage = function(event)' +
       '{\n'+
-      'var data = event.data;\n'+
+      'var done = function(returnValue)\n'+
+      '{\n'+
+      '  self.postMessage(returnValue);\n'+
+      '},\n'+
+      'args = Array.isArray(event.data) ? event.data : [event.data];\n'+
+      'args.push(done);\n'+
       'var fn = '+
       fnc.toString() + 
-      ';\n'+
-      'returnValue = fn.apply(fn, data);\n'+
-      'self.postMessage( returnValue );\n'+
+      ',\n'+
+      'returnValue = fn.apply(fn, args);\n'+
+      'if (returnValue) done(returnValue);\n'+
       '};';
     
     var compile = new Blob([synchronousAction]),
@@ -39,43 +35,75 @@ var Offline = function(opts)
       callback(e.data);
     });
     
-    return thread;
+    thread.postMessage(args);
   },
   
   noThread = function(fnc, args, callback)
   {
+    var done = function() 
+    {
+      callback.apply(callback, arguments);
+    },
+    args = Array.isArray(args) ? args : [args];
+    args.push(done);
     var result = fnc.apply(fnc, args);
+    if (!result) return;
     callback(result);
   },
   
-  schedule = /*window.Worker ? createThread :*/ noThread,
+  schedule = 
+    useThreads ? function( resource ){
+          createThread(load, resource, function(data){
+            localStorage.setItem(rel(resource), data);
+          });
+        } :
+    function( resource ){
+      noThread(load, resource, function(data){
+        localStorage.setItem(rel(resource), data);
+      });
+    },
   
-  load = function( resource ) 
+  load = function( resource, callback ) 
   {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', resource, false);
+    //https://github.com/davidchambers/Base64.js
+    var btoa = function (input) {
+      var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+      for (
+        var block, charCode, idx = 0, map = chars, output = '';
+        input.charAt(idx | 0) || (map = '=', idx % 1);
+        output += map.charAt(63 & block >> 8 - idx % 1 * 8)
+      ) {
+        charCode = input.charCodeAt(idx += 3/4);
+        if (charCode > 0xFF) throw INVALID_CHARACTER_ERR;
+        block = block << 8 | charCode;
+      }
+      return output;
+    },
+    isImage = /png$|jpg$|jpeg$|gif$|svg$/.exec(resource) || false,
+    
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', resource, true);
+    xhr.responseType = isImage ? 'arraybuffer' : 'text';
+    
     xhr.onload = function(e) 
     { 
       if (this.status !== 200) return;
       
-      var isImage = /\.png|\.jpg|\.jpeg|\.gif|\.svg/.exec(resource);
+      if (!isImage) return callback(this.responseText);
       
-      // TODO: Workers have NO access localStorage, blob or fileReader
-      if (isImage)
+//http://stackoverflow.com/questions/8022425/getting-blob-data-from-xhr-request
+      var uInt8Array = new Uint8Array(this.response),
+      i = uInt8Array.length,
+      binaryString = new Array(i);
+      while (i--)
       {
-        // @see: http://www.html5rocks.com/en/tutorials/file/xhr2
-        var blob = window.URL.createObjectURL(this.response);
-        
-        var reader = new FileReader ();
-        reader.onload = function (e) {
-          var imgDataUri = e.target.result;
-          localStorage.setItem(rel(resource), imgDataUri)
-        };
-        reader.readAsDataURL (blob);
-        return;
+        binaryString[i] = String.fromCharCode(uInt8Array[i]);
       }
+      var uri="data:image/"+(isImage[0]!=='svg'?isImage[0]:'svg+xml')+";base64,",
+      data = binaryString.join(''),
+      base64 = btoa(unescape(encodeURIComponent(data)));
       
-      localStorage.setItem(rel(resource), this.responseText)
+      callback(uri+base64);
     };
     
     xhr.send();
@@ -148,12 +176,12 @@ var Offline = function(opts)
   
   Object.freeze = Object.freeze || function(p){return p;};
   
-  return {
-    prime: function(){ scrapHTML(function(el){load(el.src || el.href)}) },
+  return Object.freeze({
+    prime: function(){ scrapHTML(function(el){schedule(el.src || el.href)}) },
     activate: replaceResourcesInline,
-    cache: function(src){ this.schedule(this.load, src, null); },
+    cache: function(src){ this.schedule(src); },
     wipe: function(src){ localstorage.setItem(rel(src), null); }
-  };
+  });
   
 }
 
