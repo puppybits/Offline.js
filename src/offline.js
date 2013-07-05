@@ -6,7 +6,6 @@ var Offline = function(opts)
 {
   var doc = opts.document || window.document,
   useThreads = (Blob && Worker && URL.createObjectURL && (opts.useThreads !== false)),
-  shouldAutoCache = opts.shouldAutoCache || true,
   rel = function(s){ return s.replace(/^.*\/\/[^\/]+/,'') },
   
   createThread = function(fnc, args, callback)
@@ -121,76 +120,12 @@ var Offline = function(opts)
       
       action(element);
     }
-  },
-  
-  replaceResourcesInline = function( element )
-  {
-    // 3 states of element: inline/cached, external/not-cached, external/cached
-    var replaceElement = function(at, content, prop)
-    {
-      element.setAttribute('data-original-src', at.src || at.href);
-      at.src = at.href = null;
-      at[prop] = content;
-    },
-    type = element.nodeName,
-    prop = type !== 'IMG' ? 'innerHTML' : 'src',
-    src = element.src || element.href,
-    result = localStorage.getItem( rel(src) );
-    
-    if (!result && src) 
-    {
-      this.schedule(this.load, src, function(result){
-        replaceElement(element, result, prop);
-      });
-    }
-    else
-    {
-      replaceElement(element, result, prop);
-    }
   };
-  // 
-  // auto = function()
-  // {
-  //   window.addEventListener('load', function()
-  //   {
-  //     if (navigator.onLine) 
-  //     {
-  //       scrapHTML(function(element)
-  //       {
-  //         schedule(load, element.src || element.href);
-  //       });
-  //     }
-  //     else
-  //     {
-  //       scrapHTML(function(element)
-  //       {
-  //         replaceResourcesInline( element );
-  //       });
-  //     }
-  //     
-  //     window.removeEventListener('load');
-  //   });
-  // };
-  // 
-  // auto();
   
   Object.freeze = Object.freeze || function(p){return p;};
   
   return Object.freeze({
-    prime: function(){ scrapHTML(function(el){schedule(el.src || el.href)}) },
-    activate: replaceResourcesInline,
-    cache: function(src){ this.schedule(src); },
-    wipe: function(src){ localstorage.setItem(rel(src), null); }
+    prime: function(){ scrapHTML(function(el){schedule(el.src || el.href)}) }
   });
   
 }
-
-// 
-// // Hacky inline testing
-// 
-// var arr = [2,3,4], i = 1;
-// Offline.prime(function(arr, i)
-// {
-//   console.log(arr[i]);
-// }, [arr, i], function(e){console.log('finished')})
-// 

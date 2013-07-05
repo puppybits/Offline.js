@@ -1,22 +1,28 @@
 # Offline
 
 ## Replace the app cache with local storage*
-* this library is focused for single page web apps.
+* Drop-in replacement for App Cache.
+* Uses local storage to cache items.
+* When the app is offline the library will replace all dom elements to inlined elements.
+* Supports inlining: scripts, css files, html templates and images(via datauris)
+* This library is focused for single page web apps.
 
 ## Base API
-* `window.onload`. Finds all CSS, JS, HTML Imports and IMGs on the document, downloads and save to local storage
-* `Offline.prime()`. Needs to be called when the app has finished loading a new route. It will find all the resources for the new dom elements and cache them.
-* `Offline.activate()`. Manually replace all items in the document with cached version inline.
-* `Offline.cache( resourceURI )`. Manually download a uri and add it to the cache.
-* `Offline.wipe( resourceURI )`. Manually remove an item from the cache
+* `Offline.prime()`. Once the DOM has all the resource nodes appended, call Offline.prime(). Prime will scrap the document for all resources, download all items in a background Worker thread (if available) and save in the local storage.
+* Coming soon! A method to replace all resources in the DOM with inline versions saved in the local storage.
 
-## Advanced API (version 2)
+## Roadmap
 
-* `Offline.json(endpoint, overrideTTL)`. Load JSON data, use the returned headers to store the TTL in cache, can be overridden in the method call. If in the json function is called with 0 it will remove it from the local storage.
-* `Offline.patchXHR()`. swap the XHR with a proxy so every library (jQuery, Angular, …) that uses XHR will be store every call in cache.
-* `Offline.blacklist( regex_of_routes )`. Array of routes to ignore the caching on.
+* check out the feature branches
 
 
+## Quick Start
 
+1. Create a file called `appcache.manifest`.
+2. In the file app only your main HTML file.
+3. Make sure your server supports manifest mime types.
+  1. For Apache open the `mime.types` and add `text/cache-manifest manifest`.
+4. Add `Offline.js` to your main HTML file.
+5. Call `Offline.prime()` on your page.
 
 `* caveat: The app cache is still needed for the main index.html but Offline will handle the rest`
