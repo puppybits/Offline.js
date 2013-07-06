@@ -10,6 +10,7 @@
         <script>
           mocha.ui('bdd'); 
           mocha.reporter('html');
+          mocha.setup({globals: ['r']});
           assert = chai.assert;
           define = function(){
             var name = arguments[0],

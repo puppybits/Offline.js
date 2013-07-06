@@ -4,9 +4,9 @@ var intDelay = false;
 
 describe('Offline', function()
 {
-  describe('Without Worker Threads', function()
+  describe('Priming the Cache', function()
   {
-    describe('priming the cache', function()
+    describe('without Worker Threads', function()
     {
       var swizzleXHR, swizzleDOM, swizzleDOMSelect, doc, OFFLINE;
     
@@ -130,11 +130,8 @@ describe('Offline', function()
       });
     
     });
-  });
-  
-  describe('With Worker Threads (if browser supprted)', function()
-  {
-    describe('priming the cache', function()
+
+    describe('with Worker Threads (if browser supprted)', function()
     {
       var swizzleXHR, swizzleDOM, swizzleDOMSelect, doc, OFFLINE;
     
@@ -258,6 +255,85 @@ describe('Offline', function()
       });
     
     });
-  });  
+  });
   
+  describe('Replacing the DOM with Inline Cache', function()
+  {
+    var swizzleDOM, swizzleDOMSelect, doc, body, OFFLINE;
+  
+    beforeEach(function()
+    {
+      doc = new DocumentFragment();
+      
+      body = document.createElement('body');
+      doc.appendChild(body);
+      body.appendChild(document.createElement('div'));
+      
+      OFFLINE = new Offline({document:doc, useThreads:false})
+    });
+  
+    afterEach(function()
+    {
+      doc = null;
+      delete doc;
+    
+      OFFLINE = null;
+      delete OFFLINE;
+    });
+  
+    xit('should apply the HTML in the DOM', function()
+    {
+      
+    });
+  
+    it('should apply the CSS Stylesheet in the DOM', function()
+    {
+      var src = '/test/integration_data/style.css',
+      css = 'body { background-color: red; }',
+      el = window.document.createElement('link');
+      el.rel = 'stylesheet';
+      el.href = src;
+      doc.appendChild(el);
+      
+      localStorage.setItem(src, css);
+      
+      OFFLINE.activate()
+      
+      assert(doc.querySelectorAll('style').length === 1);
+      assert(doc.querySelectorAll('style')[0].innerHTML === css);
+  
+      after(function()
+      {
+        delete window.localStorage[src];
+      });
+    });
+  
+    it('should apply the JavaScript script in the DOM', function()
+    {
+      var src = '/test/integration_data/script.js',
+      script = 'console.log("hi")',
+      el = window.document.createElement('script');
+      el.src = src;
+      doc.appendChild(el);
+      
+      localStorage.setItem(src, script);
+      
+      OFFLINE.activate()
+      
+      assert(doc.querySelectorAll('script').length === 1);
+      assert(doc.querySelectorAll('script')[0].innerHTML === script);
+  
+      after(function()
+      {
+        delete window.localStorage[src];
+      });
+    });
+
+    xit('should apply the cached Image in the DOM', function()
+    {      
+      
+    });
+  
+  });
+
 })

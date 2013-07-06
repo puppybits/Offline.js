@@ -1,7 +1,3 @@
-/* 
-
-*/
-
 var Offline = function(opts)
 {
   var doc = opts.document || window.document,
@@ -108,24 +104,74 @@ var Offline = function(opts)
     xhr.send();
   },
   
-  scrapHTML = function(action)
+  scrapAll = function(action)
   {
     var resources = doc.querySelectorAll('script, img, link'),
-    element, r, isUsingCached;
+    isUsingCached, element;
     for (r=0; r < resources.length; r++)
     {
       element = resources[r];
-      isUsingCached = element.getAttribute('data-original-src');
-      if (isUsingCached) continue;
-      
       action(element);
+    }
+  },
+  
+  replaceResourcesInline = function( element )
+  {
+    // 3 states of element: inline/cached, external/not-cached, external/cached
+    var type = element.nodeName,
+    src = element.src || element.href,
+    result = localStorage.getItem( rel(src) ),
+    el, parent;
+    
+    if (!result) return;
+    
+    element.setAttribute('data-original-src', src);
+    element.src = element.href = null;
+    
+    if (/css$/.exec(src))
+    {
+      el = document.createElement('style');
+      el.innerHTML = result;
+      element.parentElement ?
+        element.parentElement.insertBefore(el, element) :
+        doc.appendChild(el);
+    }
+    else if (/js$/.exec(src))
+    {
+      element.innerHTML = result;
+    }
+    else if (/html$/.exec(src))
+    {
+      
+    }
+    else if (type.toUpperCase() === 'IMG')
+    {
+      
     }
   };
   
   Object.freeze = Object.freeze || function(p){return p;};
   
-  return Object.freeze({
-    prime: function(){ scrapHTML(function(el){schedule(el.src || el.href)}) }
+  return Object.freeze(
+    {
+      prime: function()
+      { 
+        scrapAll( function(el)
+        {
+          var isCached = el.getAttribute('data-original-src');
+          if (isCached) return;
+          schedule(el.src || el.href) 
+        }) 
+      },
+    activate: function()
+    {
+      scrapAll( function(el)
+      {
+        var isCached = el.getAttribute('data-original-src');
+        if (isCached) return;
+        replaceResourcesInline(el);
+      })
+    }
   });
   
 }
