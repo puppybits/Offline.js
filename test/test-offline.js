@@ -329,9 +329,25 @@ describe('Offline', function()
       });
     });
 
-    xit('should apply the cached Image in the DOM', function()
-    {      
+    it('should apply the cached Image in the DOM', function()
+    {
+      var src = '/test/integration_data/spacer.gif',
+      img = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==",
+      el = window.document.createElement('img');
+      el.src = src;
+      doc.appendChild(el);
       
+      localStorage.setItem(src, img);
+      
+      OFFLINE.activate()
+      
+      assert(doc.querySelectorAll('img').length === 1);
+      assert(doc.querySelectorAll('img')[0].src === img);
+  
+      after(function()
+      {
+        delete window.localStorage[src];
+      });
     });
   
   });

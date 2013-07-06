@@ -146,7 +146,7 @@ var Offline = function(opts)
     }
     else if (type.toUpperCase() === 'IMG')
     {
-      
+      element.src = result;
     }
   };
   
