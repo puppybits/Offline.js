@@ -349,7 +349,23 @@ describe('Offline', function()
         delete window.localStorage[src];
       });
     });
-  
+    
+    xit('stylesheets should affect the document', function()
+    {
+      
+    });
+    
+    
+    xit('javascript should execute in the document', function()
+    {
+      
+    });
+    
+    
+    xit('images should appear in the document', function()
+    {
+      
+    });
   });
 
 })
