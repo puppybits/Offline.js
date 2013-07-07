@@ -280,12 +280,7 @@ describe('Offline', function()
       OFFLINE = null;
       delete OFFLINE;
     });
-  
-    xit('should apply the HTML in the DOM', function()
-    {
-      
-    });
-  
+    
     it('should apply the CSS Stylesheet in the DOM', function()
     {
       var src = '/test/integration_data/style.css',

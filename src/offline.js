@@ -144,7 +144,7 @@ var Offline = function(opts)
       el.innerHTML = result;
       element.parentElement ?
         element.parentElement.replaceChild(el, element) :
-        doc.appendChild(el);
+        doc.appendChild(el), doc.removeChild(element);
     }
     else if (/html$/.exec(src))
     {
