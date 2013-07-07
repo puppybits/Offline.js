@@ -120,13 +120,14 @@ var Offline = function(opts)
     // 3 states of element: inline/cached, external/not-cached, external/cached
     var type = element.nodeName,
     src = element.src || element.href,
-    result = localStorage.getItem( rel(src) ),
+    result = src ? localStorage.getItem( rel(src) ) : false,
     el, parent;
     
     if (!result) return;
     
     element.setAttribute('data-original-src', src);
-    element.src = element.href = null;
+    if (!/html$/.exec(src))
+      element.src = element.href = null;
     
     if (/css$/.exec(src))
     {
@@ -138,7 +139,12 @@ var Offline = function(opts)
     }
     else if (/js$/.exec(src))
     {
-      element.innerHTML = result;
+      el = document.createElement('script');
+      el.type = element.type;
+      el.innerHTML = result;
+      element.parentElement ?
+        element.parentElement.replaceChild(el, element) :
+        doc.appendChild(el);
     }
     else if (/html$/.exec(src))
     {
