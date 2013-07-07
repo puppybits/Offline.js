@@ -1,7 +1,8 @@
 var Offline = function(opts)
 {
-  var doc = opts.document || window.document,
-  useThreads = (Blob && Worker && URL.createObjectURL && (opts.useThreads !== false)),
+  var doc = (opts && opts.document ? opts.document : null) || window.document,
+  hasBrowserThreads = Blob && Worker && URL.createObjectURL,
+  useThreads = (hasBrowserThreads && opts !== undefined && opts.useThreads === true),
   rel = function(s){ return s.replace(/^.*\/\/[^\/]+/,'') },
   
   createThread = function(fnc, args, callback)
