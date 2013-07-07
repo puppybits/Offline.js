@@ -1,15 +1,22 @@
 # Offline
 
-## Replace the app cache with local storage*
+## Make it easy to run Angular, Backbone and Polymer apps offline.
+
 * Drop-in replacement for App Cache.
-* Uses local storage to cache items.
+* Designed to work with Angular, Backbone and Polymer without monkey patching the them.
+* Multi-threading (Web Workers) supported to keep the downloading and parsing off the main UI thread keep your FPS stable.
+* Use local storage to cache items.
 * When the app is offline the library will replace all dom elements to inlined elements.
-* Supports inlining: scripts, css files and images(via datauris)
-* This library is focused for single page web apps.
+* Supports inlining: scripts, css files and images.
+* Users don't need to reload page when there is new resource version available.
+* Super simple development process. No need for build scripts, no manually deleting app cache, no need to use phonegap just to work offline.
+* Speed up online apps by caching your XHR requests and freeing JS, CSS, HTML from memory when not being used.
+* It just works.
 
 ## Base API
 * `Offline.prime()`. Once the DOM has all the resource nodes appended, call Offline.prime(). Prime will scrap the document for all resources, download all items in a background Worker thread (if available) and save in the local storage.
 * `Offline.activate()`. After all the resources have been cached via prime, calling activate will replace elements with inline data from the local storage.
+* __Coming soon.__ Automatically cache all JSON requests with a blacklist to exclude sensitive or real-time only data.
 
 ## Roadmap
 
@@ -33,10 +40,10 @@ NETWORK:
 
 * Make sure your server supports manifest mime types.
   * For Apache open the `mime.types` and add `text/cache-manifest manifest`.
-* Add the manifest to your html tag `<html manifest="appcache.manifest">`
+* Add the manifest to your html tag `<html manifest="appcache.manifest">`.
 * Add `offline.js`.
-* call `offline.prime()` to download everything in the DOM
-* call `offline.activate()` to replace DOM nodes with local storage cache
+* Call `offline.prime()` to download everything in the DOM.
+* Call `offline.activate()` to replace DOM nodes with local storage cache.
 
 ```html
 <html manifest="appcache.manifest">
@@ -59,5 +66,9 @@ NETWORK:
 ```
 
 * In order to update the main html after the inital load, delete the app cache browser storage. In chrome use: `chrome://appcache-internals`.
+
+## License
+
+MIT  
 
 `* caveat: The app cache is still needed for the main index.html but Offline will handle the rest`
