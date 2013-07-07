@@ -18,11 +18,23 @@
 
 ## Quick Start
 
-1. Create a file called `appcache.manifest`.
-2. In the file app only your main HTML file.
-3. Make sure your server supports manifest mime types.
-  1. For Apache open the `mime.types` and add `text/cache-manifest manifest`.
-4. Add `Offline.js` to your main HTML file.
-5. Call `Offline.prime()` on your page.
+* Create a file called `appcache.manifest`. 
+
+```
+CACHE MANIFEST
+
+CACHE:
+index.html   # replace with your main html file
+offline.js
+
+NETWORK:
+*
+```
+
+* Make sure your server supports manifest mime types.
+  * For Apache open the `mime.types` and add `text/cache-manifest manifest`.
+* Add the manifest to your html tag `<html manifest="appcache.manifest">`
+* Add `offline.js` and call `offline.prime()` after the page has loaded.
+* In order to update the main html delete the app cache browser storage. In chrome use: `chrome://appcache-internals`
 
 `* caveat: The app cache is still needed for the main index.html but Offline will handle the rest`
