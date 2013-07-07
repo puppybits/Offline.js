@@ -1,16 +1,16 @@
 # Offline
 
-## Make it easy to run Angular, Backbone and Polymer apps offline.
+## Run Angular, Backbone and Polymer apps offline!
 
-* Drop-in replacement for App Cache.
+* Drop-in replacement for the horribly broken App Cache.
 * Designed to work with Angular, Backbone and Polymer without monkey patching the them.
 * Multi-threading (Web Workers) supported to keep the downloading and parsing off the main UI thread keep your FPS stable.
-* Use local storage to cache items.
-* When the app is offline the library will replace all dom elements to inlined elements.
-* Supports inlining: scripts, css files and images.
 * Users don't need to reload page when there is new resource version available.
 * Super simple development process. No need for build scripts, no manually deleting app cache, no need to use phonegap just to work offline.
-* Speed up online apps by caching your XHR requests and freeing JS, CSS, HTML from memory when not being used.
+* Speed up online apps by caching your XHR requests and freeing JS, CSS, image from memory when not being used.
+* Offline use the local storage to cache all the JS, CSS and images.
+* When the app is offline the library will replace all dom elements to inlined elements.
+* Supports inlining: scripts, css files and images.
 * It just works.
 
 ## Base API
@@ -71,4 +71,3 @@ NETWORK:
 
 MIT  
 
-`* caveat: The app cache is still needed for the main index.html but Offline will handle the rest`
