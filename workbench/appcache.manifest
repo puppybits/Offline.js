@@ -1,0 +1,9 @@
+CACHE MANIFEST
+
+CACHE:
+/workbench/offline.html
+../src/offline.js
+
+
+NETWORK:
+*

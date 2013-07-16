@@ -1,0 +1,16 @@
+<html manifest="/workbench/appcache.manifest">
+    <head>
+        <script src="../src/offline.js"></script>
+        <title> Offline Workbench </title>
+    </head>
+    <body>
+      <img src="/workbench/resources/img.png" style="width:30px; height:30px;">
+      <link rel="stylesheet" href="/workbench/resources/style.css"></link>
+      <script src="/workbench/resources/script.js"></script>
+    </body>
+    <script>
+    var offline = Offline({useThreads: false});
+    
+    (navigator.onLine ? offline.prime() : offline.activate());
+    </script>
+</html>

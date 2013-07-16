@@ -67,7 +67,20 @@ NETWORK:
 
 * In order to update the main html after the inital load, delete the app cache browser storage. In chrome use: `chrome://appcache-internals`.
 
+## Workbench
+
+* Working sample is in the workbench. 
+* Navigate to the root and run `python -m SimpleHTTPServer && open http://localhost:8000/workbench/offline.html`.
+* Make sure the server is sending the manifest file with the `text/cache-manifest` type.
+* The first load will run offline.prime() to store the assets in local storage.
+* Turn off the python server AND disconnect from any wired/wireless internet (for navigator.onLine to report false).
+* Reload the page and the assets will be using the local storage cache.
+
 ## License
 
 MIT  
+
+
+`* caveat: The app cache is still needed for the main index.html but Offline will handle the rest`
+
 
