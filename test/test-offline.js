@@ -1,6 +1,6 @@
 // toggle between unit and integration test by setting a ms delay 
 // and run `python -m SimpleHTPServer` at the root directory
-var intDelay = false;
+var intDelay = 20;
 
 describe('Offline', function()
 {
@@ -309,7 +309,8 @@ describe('Offline', function()
       script = 'console.log("hi")',
       el = window.document.createElement('script');
       el.src = src;
-      doc.appendChild(el);
+      doc.appendChild(window.document.createElement('head'))
+      doc.querySelectorAll('head')[0].appendChild(el);
       
       localStorage.setItem(src, script);
       

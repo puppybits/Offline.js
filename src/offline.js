@@ -1,8 +1,10 @@
-var Offline = function(opts)
-{
-  var doc = (opts && opts.document ? opts.document : null) || window.document,
-  hasBrowserThreads = Blob && Worker && URL.createObjectURL,
-  useThreads = (hasBrowserThreads && opts !== undefined && opts.useThreads === true),
+var Offline = function(opts) {
+  'use strict';
+  
+  opts = opts || {};
+  var doc = (opts.document ? opts.document : window.document),
+  hasBrowserThreads = (Blob && Worker && URL.createObjectURL ? true : false),
+  useThreads = (hasBrowserThreads && (opts.useThreads === false ? false : true)),
   rel = function(s){ return s.replace(/^.*\/\/[^\/]+/,'') },
   
   createThread = function(fnc, args, callback)
@@ -49,11 +51,13 @@ var Offline = function(opts)
   
   schedule = 
     useThreads ? function( resource ){
-          createThread(load, resource, function(data){
-            localStorage.setItem(rel(resource), data);
-          });
-        } :
+      if (!resource) return;
+      createThread(load, resource, function(data){
+        localStorage.setItem(rel(resource), data);
+      });
+    } :
     function( resource ){
+      if (!resource) return;
       noThread(load, resource, function(data){
         localStorage.setItem(rel(resource), data);
       });
@@ -97,7 +101,7 @@ var Offline = function(opts)
       }
       var uri="data:image/"+(isImage[0]!=='svg'?isImage[0]:'svg+xml')+";base64,",
       data = binaryString.join(''),
-      base64 = btoa(unescape(encodeURIComponent(data)));
+      base64 = btoa(data);
       
       callback(uri+base64);
     };
@@ -108,7 +112,7 @@ var Offline = function(opts)
   scrapAll = function(action)
   {
     var resources = doc.querySelectorAll('script, img, link'),
-    isUsingCached, element;
+    isUsingCached, element, r;
     for (r=0; r < resources.length; r++)
     {
       element = resources[r];
@@ -143,9 +147,15 @@ var Offline = function(opts)
       el = document.createElement('script');
       el.type = element.type;
       el.innerHTML = result;
-      element.parentElement ?
-        element.parentElement.replaceChild(el, element) :
-        doc.appendChild(el), doc.removeChild(element);
+      if (element.parentElement) 
+      {
+        element.parentElement.replaceChild(el, element);
+      }
+      else
+      {
+        doc.appendChild(el);
+        doc.removeChild(element);
+      }
     }
     else if (/html$/.exec(src))
     {
